@@ -126,6 +126,17 @@
             border-radius: 5px;
             overflow-x: auto;
             font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .result ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .result li {
+            margin-bottom: 5px;
         }
         
         .loading {
@@ -158,6 +169,16 @@
             display: block;
             margin-bottom: 5px;
         }
+        
+        .debug-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -167,7 +188,7 @@
         
         <div class="info-box">
             <strong>🧪 测试表单</strong>
-            这个表单会提交到Automation，触发自动打电话预约 demo。
+            这个表单会提交到自动打电话预约 demo
         </div>
         
         <form id="demoForm">
@@ -210,7 +231,7 @@
         const btnText = document.getElementById('btnText');
         const resultDiv = document.getElementById('result');
         
-        // n8n webhook URL
+        // ✅ CORRECT n8n webhook URL - matches n8n path: "demo"
         const WEBHOOK_URL = 'https://nexusconceptonline.app.n8n.cloud/webhook/demo';
         
         form.addEventListener('submit', async (e) => {
@@ -229,39 +250,116 @@
                 source: document.getElementById('source').value
             };
             
+            console.log('🚀 Submitting to:', WEBHOOK_URL);
+            console.log('📦 Form data:', formData);
+            
             try {
                 // Submit to n8n webhook
+                console.log('⏳ Sending request...');
+                
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
+                    mode: 'cors',
                     body: JSON.stringify(formData)
                 });
                 
-                const data = await response.json();
+                console.log('✅ Response received:', response.status, response.statusText);
                 
-                // Show result
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Try to parse JSON response
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('📥 Response data:', data);
+                } catch (parseError) {
+                    console.error('❌ Failed to parse JSON:', parseError);
+                    throw new Error('Server returned invalid JSON response');
+                }
+                
+                // Show success result
                 resultDiv.className = 'result success';
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `
                     <strong>✅ 提交成功!</strong>
                     <p>我们的AI助理 Peter 会在几分钟内打电话给你安排演示时间。</p>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    
+                    <div class="debug-info">
+                        <strong>提交的资料:</strong>
+                        <pre>${JSON.stringify(formData, null, 2)}</pre>
+                    </div>
+                    
+                    <div class="debug-info">
+                        <strong>服务器回应:</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
                 `;
                 
                 // Clear form
                 form.reset();
                 
             } catch (error) {
-                // Show error
+                console.error('❌ Error:', error);
+                
+                // Show detailed error
                 resultDiv.className = 'result error';
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
+                
+                let errorHTML = `
                     <strong>❌ 提交失败</strong>
-                    <p>请稍后再试或联系我们的客服。</p>
-                    <pre>${error.message}</pre>
+                    <p><strong>错误:</strong> ${error.message}</p>
                 `;
+                
+                // Add possible causes
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorHTML += `
+                        <p><strong>可能原因:</strong></p>
+                        <ul>
+                            <li>n8n workflow 没有启动 (检查 Active 开关)</li>
+                            <li>Webhook URL 不正确</li>
+                            <li>网络连接问题</li>
+                            <li>CORS 设置问题</li>
+                        </ul>
+                    `;
+                } else if (error.message.includes('HTTP 404')) {
+                    errorHTML += `
+                        <p><strong>可能原因:</strong></p>
+                        <ul>
+                            <li>⚠️ Webhook path 不存在</li>
+                            <li>⚠️ n8n workflow 没有启动</li>
+                        </ul>
+                    `;
+                } else if (error.message.includes('HTTP 500')) {
+                    errorHTML += `
+                        <p><strong>可能原因:</strong></p>
+                        <ul>
+                            <li>⚠️ n8n workflow 执行错误</li>
+                            <li>检查 n8n Executions 查看详细错误</li>
+                        </ul>
+                    `;
+                }
+                
+                errorHTML += `
+                    <div class="debug-info">
+                        <strong>调试信息:</strong><br>
+                        Webhook URL: ${WEBHOOK_URL}<br>
+                        <br>
+                        提交的数据:<br>
+                        <pre>${JSON.stringify(formData, null, 2)}</pre>
+                        <br>
+                        完整错误:<br>
+                        <pre>${error.stack || error.message}</pre>
+                    </div>
+                `;
+                
+                resultDiv.innerHTML = errorHTML;
             } finally {
                 // Re-enable button
                 submitBtn.disabled = false;
@@ -285,6 +383,9 @@
             
             e.target.value = value;
         });
+        
+        // Show webhook URL on page load for debugging
+        console.log('🔗 Webhook URL configured:', WEBHOOK_URL);
     </script>
 </body>
 </html>
