@@ -1,14 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>Test Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalodata Demo 预约测试表单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result pre {
+            margin-top: 10px;
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+        
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Test Form</h1>
-    <form>
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name"><br>
-        <input type="submit" value="Submit">
-    </form>
+    <div class="container">
+        <h1>📞 Kalodata Demo 预约</h1>
+        <p class="subtitle">免费TikTok数据分析演示</p>
+        
+        <div class="info-box">
+            <strong>🧪 测试表单</strong>
+            这个表单会提交到Automation，触发自动打电话预约 demo。
+        </div>
+        
+        <form id="demoForm">
+            <div class="form-group">
+                <label for="name">姓名 *</label>
+                <input type="text" id="name" name="name" required placeholder="例: 张先生">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">电话号码 *</label>
+                <input type="tel" id="phone" name="phone" required placeholder="例: 60123456789" pattern="[0-9]{10,12}">
+                <small style="color: #666; font-size: 12px;">格式: 60 + 手机号码 (不要加空格或破折号)</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">电邮地址 *</label>
+                <input type="email" id="email" name="email" required placeholder="例: zhang@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="source">来源 *</label>
+                <select id="source" name="source" required>
+                    <option value="website_form">网站表单 (Website Form)</option>
+                    <option value="facebook_lead_form">Facebook Lead Form</option>
+                    <option value="facebook_ad">Facebook 广告 (需要收集email)</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="submitBtn">
+                <span id="btnText">提交预约</span>
+            </button>
+        </form>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('demoForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const resultDiv = document.getElementById('result');
+        
+        // n8n webhook URL
+        const WEBHOOK_URL = 'https://nexusconceptonline.app.n8n.cloud/webhook/e99dd58a-32ee-4ed4-93cd-82ab8504e1ba';
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Disable button
+            submitBtn.disabled = true;
+            btnText.innerHTML = '提交中... <span class="loading"></span>';
+            resultDiv.style.display = 'none';
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                source: document.getElementById('source').value
+            };
+            
+            try {
+                // Submit to n8n webhook
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                // Show result
+                resultDiv.className = 'result success';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <strong>✅ 提交成功!</strong>
+                    <p>我们的AI助理 Peter 会在几分钟内打电话给你安排演示时间。</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // Clear form
+                form.reset();
+                
+            } catch (error) {
+                // Show error
+                resultDiv.className = 'result error';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <strong>❌ 提交失败</strong>
+                    <p>请稍后再试或联系我们的客服。</p>
+                    <pre>${error.message}</pre>
+                `;
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                btnText.textContent = '提交预约';
+            }
+        });
+        
+        // Auto-format phone number
+        document.getElementById('phone').addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // If doesn't start with 60, add it
+            if (value.length > 0 && !value.startsWith('60')) {
+                // If starts with 0, remove it and add 60
+                if (value.startsWith('0')) {
+                    value = '60' + value.substring(1);
+                } else {
+                    value = '60' + value;
+                }
+            }
+            
+            e.target.value = value;
+        });
+    </script>
 </body>
 </html>
